@@ -1,6 +1,6 @@
-include("/home/chirraneso/training/simulator_DL/simulator.jl")
-include("/home/chirraneso/training/phylogeny_simu_abc.jl")
-include("/home/chirraneso/training/tree2adjmatrix.jl")
+include("./simulator_DL/simulator.jl")
+include("phylogeny_simu_abc.jl")
+include("tree2adjmatrix.jl")
 
 function prior(n)
     theta=Vector{Any}(nothing,n)
@@ -16,7 +16,7 @@ function prior(n)
     return theta#Penser à avoir le même ordre que le modèle dummy
 end
 
-N = 10
+N = 1000
 nb_leafs = 20
 t_max = 300
 
@@ -35,19 +35,24 @@ dataset["LTT"] = Vector{Any}(nothing,10*N)
 
 param = prior(N)
 
-for i in 1:N
+for i in 1:(N)
     p2,p0 = param[i][1], param[i][2]
     for j in 1:10
         dict = dico_simu(p0,p2, nb_leafs,t_max)
+        while dict["coo"] == 0
+            test_param = prior(1)
+            p2,p0 = test_param[1][1], test_param[1][2]
+            dict = dico_simu(p0,p2, nb_leafs,t_max)
+        end
         for k in keys(dataset)
-            dataset[k][i] = dict[k]
+            dataset[k][(i-1)*10 + j] = dict[k]
         end
     end
 end
-    
+
 using JSON
 str = JSON.json(dataset)
-write("dataset10.txt", str)
+write("dataset10k_v2.txt", str)
 
 
 """str = read("data.txt", String)

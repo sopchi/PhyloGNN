@@ -87,7 +87,7 @@ criterion = torch.nn.L1Loss(reduction='sum')
 import json
 
 # Open the file and read the contents
-with open('/workdir/chirraneso/dataset10k.txt', 'r') as file:
+with open('dataset10k.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
     contents = file.read()
 
 # Parse the contents as JSON and convert it to a Python dictionary
@@ -155,7 +155,7 @@ report.write(f'leafs:{nb_leafs}\n')
 report.write(f'tmax:{t_max}\n')
 report.write(f'trainsize:{train_size}\n')
 
-for epoch in range(1, 100):
+for epoch in range(1, 2):
     train()
     MSE, error_q, error_delta, error_p2, error_p0 = test()
     report.write(f'Epoch: {epoch:03d}, Test MSE: {MSE:.4f}, Test error q: {error_q:.4f},Test error delat: {error_delta:.4f},Test error p2: {error_p2:.4f}, Test error p0: {error_p0:.4f} \n')
