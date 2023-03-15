@@ -87,7 +87,7 @@ criterion = torch.nn.L1Loss(reduction='sum')
 import json
 
 # Open the file and read the contents
-with open('dataset10k.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
+with open('dataset10k_v2.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
     contents = file.read()
 
 # Parse the contents as JSON and convert it to a Python dictionary
@@ -142,10 +142,10 @@ def test():
             distance = criterion(out, data.y)  # Compute the loss.
             out = out[0]
             data.y = data.y[0]
-            error_q += (out[0] -data.y[0])/data.y[0]
-            error_delta += (out[1] -data.y[1])/data.y[1]
-            error_p2 += (out[1]/(1-out[0]) - p2)/p2
-            error_p0 += (out[0]*out[1]/(1-out[0]) - p0)/p0
+            error_q += abs(out[0] -data.y[0])/data.y[0]
+            error_delta += abs(out[1] -data.y[1])/data.y[1]
+            error_p2 += abs(out[1]/(1-out[0]) - p2)/p2
+            error_p0 += abs(out[0]*out[1]/(1-out[0]) - p0)/p0
             MSE += distance
     return MSE/(n-train_size), error_q/(n-train_size), error_delta/(n-train_size), error_p2/(n-train_size), error_p0/(n-train_size)
 
