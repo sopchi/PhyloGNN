@@ -82,7 +82,7 @@ from IPython.display import Javascript
 
 nb_leafs = 20
 t_max = 300
-model = GNN(hidden_channels=50, n_hidden_convlayers=int(0.4*(nb_leafs-1)))
+model = GNN(hidden_channels=50, n_hidden_convlayers=int(0.4*(nb_leafs-1))).to('cuda')
 optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 criterion = torch.nn.L1Loss(reduction='sum')
 
@@ -114,9 +114,9 @@ def train():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
-            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
-            data.edata['featedge'] = torch.tensor([values]).T
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col)))).to('cuda')
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float().to('cuda')
+            data.edata['featedge'] = torch.tensor([values]).T.to('cuda')
             data = dgl.add_self_loop(data) # for 0 in degree node 
             label = torch.tensor([[p0/p2,p2-p0]])
             out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
@@ -143,9 +143,9 @@ def test():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
-            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
-            data.edata['featedge'] = torch.tensor([values]).T
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col)))).to('cuda')
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float().to('cuda')
+            data.edata['featedge'] = torch.tensor([values]).T.to('cuda')
             data = dgl.add_self_loop(data)
             label = torch.tensor([[p0/p2,p2-p0]])
             out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
