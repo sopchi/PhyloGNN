@@ -12,15 +12,14 @@ import torch.nn.functional as F
 import torch.optim as optim
 import random as rd 
 from torch.nn import Softmax
-from torch_geometric.data import Data
+from dgl.nn.pytorch.conv import GraphConv
+import dgl
 
 
 from torch.nn import Linear
 from torch.nn import Softmax
 import torch.nn.functional as F
 #from torch_geometric.nn import GCNConv
-from torch_geometric.nn import GraphConv
-from torch_geometric.nn import global_mean_pool
 
 
 class GNN(torch.nn.Module):
@@ -49,18 +48,21 @@ class GNN(torch.nn.Module):
         self.lin = Linear(hidden_channels, output)
 
 
-    def forward(self,node_attr,edge_index, batch):
+    def forward(self,node_attr,edge_index):
         # 1. Obtain edge embeddings 
         for k in range(self.n_hidden_convlayers):
-            node_attr = self.hidden_layers[k](node_attr,edge_index)
+            node_attr = self.hidden_layers[k](edge_index,node_attr)
             node_attr = node_attr.relu()
 
-        # 2. Readout layer
-        node_attr = global_mean_pool(node_attr, batch)  # [batch_size, hidden_channels]
+        # 2. Readout layer , equivalent to global mean pool
+        with edge_index.local_scope():
+            edge_index.ndata['feat'] = node_attr
+            # Calculate graph representation by average readout.
+            M = dgl.mean_nodes(edge_index, 'feat')
+            node_attr = self.lin5(M)
 
         # 3. Apply a final classifier
         #node_attr = F.dropout(node_attr, p=0.5, training=self.training)
-        node_attr = self.lin5(node_attr)
         node_attr = node_attr.relu()
         node_attr = self.lin6(node_attr)
         node_attr = node_attr.relu()
@@ -87,7 +89,7 @@ criterion = torch.nn.L1Loss(reduction='sum')
 import json
 
 # Open the file and read the contents
-with open('dataset10k_v2.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
+with open('/workdir/chirraneso/dataset10k.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
     contents = file.read()
 
 # Parse the contents as JSON and convert it to a Python dictionary
@@ -112,9 +114,13 @@ def train():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = Data(edge_index = coo, y= torch.tensor([[p0/p2,p2-p0]]), num_nodes = 2*nb_leafs-1,edge_attr = torch.tensor([values+[0]]).T,  x=torch.tensor(np.vstack((features,np.zeros(4)))).float()) #[p0,1-(p2 +p0),p2]
-            out = model(data.x,data.edge_index, data.batch) # Perform a single forward pass. #CHANGE
-            loss = criterion(out, data.y)  # Compute the loss.
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
+            data.edata['featedge'] = torch.tensor([values]).T
+            data = dgl.add_self_loop(data) # for 0 in degree node 
+            label = torch.tensor([[p0/p2,p2-p0]])
+            out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
+            loss = criterion(out, label)  # Compute the loss.
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients.
             optimizer.zero_grad()  # Clear gradients.
@@ -137,25 +143,29 @@ def test():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = Data(edge_index = coo, y= torch.tensor([[p0/p2,p2-p0]]), num_nodes = 2*nb_leafs-1, edge_attr = torch.tensor([values+[0]]).T, x=torch.tensor(np.vstack((features,np.zeros(4)))).float())
-            out = model(data.x,data.edge_index, data.batch) # Perform a single forward pass. #CHANGE
-            distance = criterion(out, data.y)  # Compute the loss.
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
+            data.edata['featedge'] = torch.tensor([values]).T
+            data = dgl.add_self_loop(data)
+            label = torch.tensor([[p0/p2,p2-p0]])
+            out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
+            distance = criterion(out, label) # Compute the loss.
             out = out[0]
-            data.y = data.y[0]
-            error_q += abs(out[0] -data.y[0])/data.y[0]
-            error_delta += abs(out[1] -data.y[1])/data.y[1]
+            label = label[0]
+            error_q += abs(out[0] -label[0])/label[0]
+            error_delta += abs(out[1] -label[1])/label[1]
             error_p2 += abs(out[1]/(1-out[0]) - p2)/p2
             error_p0 += abs(out[0]*out[1]/(1-out[0]) - p0)/p0
             MSE += distance
     return MSE/(n-train_size), error_q/(n-train_size), error_delta/(n-train_size), error_p2/(n-train_size), error_p0/(n-train_size)
 
 
-report = open("report_GNN_node_features.txt","w+")
+report = open("report_GNN_node_features10k.txt","w+")
 report.write(f'leafs:{nb_leafs}\n')
 report.write(f'tmax:{t_max}\n')
 report.write(f'trainsize:{train_size}\n')
 
-for epoch in range(1, 100):
+for epoch in range(1, 50):
     train()
     MSE, error_q, error_delta, error_p2, error_p0 = test()
     report.write(f'Epoch: {epoch:03d}, Test MSE: {MSE:.4f}, Test error q: {error_q:.4f},Test error delat: {error_delta:.4f},Test error p2: {error_p2:.4f}, Test error p0: {error_p0:.4f} \n')

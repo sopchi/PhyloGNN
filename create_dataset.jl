@@ -1,6 +1,6 @@
-include("./simulator_DL/simulator.jl")
-include("phylogeny_simu_abc.jl")
-include("tree2adjmatrix.jl")
+include("/home/chirraneso/training/simulator_DL/simulator.jl")
+include("/home/chirraneso/training/phylogeny_simu_abc.jl")
+include("/home/chirraneso/training/tree2adjmatrix.jl")
 
 function prior(n)
     theta=Vector{Any}(nothing,n)
@@ -52,7 +52,7 @@ end
 
 using JSON
 str = JSON.json(dataset)
-write("dataset10k_v2.txt", str)
+write("/workdir/chirraneso/dataset10k.txt", str)
 
 
 """str = read("data.txt", String)
