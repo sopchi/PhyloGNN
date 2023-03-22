@@ -1,0 +1,22 @@
+leafs:20
+tmax:300
+trainsize:8000
+Epoch: 001, Test MSE: 0.4180, Test error q: 5.9596,Test error delat: 1.3820,Test error p2: 0.4934, Test error p0: 6.6362 
+Epoch: 002, Test MSE: 0.3405, Test error q: 5.7972,Test error delat: 0.7085,Test error p2: 0.3628, Test error p0: 6.8431 
+Epoch: 003, Test MSE: 0.2718, Test error q: 4.4384,Test error delat: 0.4290,Test error p2: 0.2956, Test error p0: 6.0773 
+Epoch: 004, Test MSE: 0.2560, Test error q: 4.2342,Test error delat: 0.3732,Test error p2: 0.2758, Test error p0: 5.7399 
+Epoch: 005, Test MSE: 0.2537, Test error q: 3.8408,Test error delat: 0.3978,Test error p2: 0.2920, Test error p0: 5.6571 
+Epoch: 006, Test MSE: 0.2481, Test error q: 3.7939,Test error delat: 0.3762,Test error p2: 0.2798, Test error p0: 5.4439 
+Epoch: 007, Test MSE: 0.2437, Test error q: 3.7504,Test error delat: 0.3665,Test error p2: 0.2777, Test error p0: 5.4977 
+Epoch: 008, Test MSE: 0.2402, Test error q: 3.8928,Test error delat: 0.3383,Test error p2: 0.2635, Test error p0: 5.4519 
+Epoch: 009, Test MSE: 0.2373, Test error q: 3.8974,Test error delat: 0.3365,Test error p2: 0.2684, Test error p0: 5.7315 
+Epoch: 010, Test MSE: 0.2374, Test error q: 3.9059,Test error delat: 0.3356,Test error p2: 0.2641, Test error p0: 5.6712 
+Epoch: 011, Test MSE: 0.2372, Test error q: 3.7466,Test error delat: 0.3527,Test error p2: 0.2678, Test error p0: 5.6066 
+Epoch: 012, Test MSE: 0.2367, Test error q: 3.6956,Test error delat: 0.3473,Test error p2: 0.2621, Test error p0: 5.4487 
+Epoch: 013, Test MSE: 0.2364, Test error q: 3.9282,Test error delat: 0.3367,Test error p2: 0.2600, Test error p0: 5.6805 
+Epoch: 014, Test MSE: 0.2358, Test error q: 3.8926,Test error delat: 0.3438,Test error p2: 0.2667, Test error p0: 5.7140 
+Epoch: 015, Test MSE: 0.2378, Test error q: 4.1964,Test error delat: 0.3288,Test error p2: 0.2589, Test error p0: 5.9101 
+Epoch: 016, Test MSE: 0.2363, Test error q: 3.9141,Test error delat: 0.3588,Test error p2: 0.2686, Test error p0: 5.7647 
+Epoch: 017, Test MSE: 0.2374, Test error q: 3.8314,Test error delat: 0.3886,Test error p2: 0.2805, Test error p0: 5.7880 
+Epoch: 018, Test MSE: 0.2375, Test error q: 3.9277,Test error delat: 0.3771,Test error p2: 0.2795, Test error p0: 5.8598 
+Epoch: 019, Test MSE: 0.2362, Test error q: 4.0761,Test error delat: 0.3384,Test error p2: 0.2594, Test error p0: 5.7886 

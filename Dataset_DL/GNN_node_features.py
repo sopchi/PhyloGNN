@@ -56,10 +56,10 @@ class GNN(torch.nn.Module):
             node_attr = node_attr.relu()
 
         # 2. Readout layer
-        node_attr = global_mean_pool(node_attr, batch)  # [batch_size, hidden_channels]
+        #node_attr = global_mean_pool(node_attr, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
-        node_attr = F.dropout(node_attr, p=0.5, training=self.training)
+        #node_attr = F.dropout(node_attr, p=0.5, training=self.training)
         node_attr = self.lin5(node_attr)
         node_attr = node_attr.relu()
         node_attr = self.lin6(node_attr)
@@ -155,7 +155,7 @@ report.write(f'leafs:{nb_leafs}\n')
 report.write(f'tmax:{t_max}\n')
 report.write(f'trainsize:{train_size}\n')
 
-for epoch in range(1, 2):
+for epoch in range(1, 100):
     train()
     MSE, error_q, error_delta, error_p2, error_p0 = test()
     report.write(f'Epoch: {epoch:03d}, Test MSE: {MSE:.4f}, Test error q: {error_q:.4f},Test error delat: {error_delta:.4f},Test error p2: {error_p2:.4f}, Test error p0: {error_p0:.4f} \n')
