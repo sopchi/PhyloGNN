@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import random as rd 
 from torch.nn import Softmax
-from dgl.nn.pytorch.conv import GraphConv
+from dgl.nn.pytorch.conv import GATConv
 import dgl
 
 
@@ -27,20 +27,23 @@ class GNN(torch.nn.Module):
         super(GNN, self).__init__()
         torch.manual_seed(12345)
         
-        num_node_features = 4 #change
+        self.num_node_features = 4 #change
         output = 2
+        self.heads_hidden = 4
         self.n_hidden_convlayers = n_hidden_convlayers
+        self.hidden_channels = hidden_channels
         # edge embedding
         
         self.hidden_layers = nn.ModuleList()
         for k in range(n_hidden_convlayers):
             if k == 0:
-                self.hidden_layers.append( GraphConv(num_node_features, hidden_channels))
+                self.hidden_layers.append( GATConv(self.num_node_features, hidden_channels, num_heads=self.heads_hidden))
             else:
-                self.hidden_layers.append( GraphConv(hidden_channels, hidden_channels))
+                self.hidden_layers.append( GATConv(hidden_channels*self.heads_hidden, hidden_channels, num_heads=self.heads_hidden))
+                
 
         # global embedding 
-        self.lin5 = Linear(hidden_channels, hidden_channels)
+        self.lin5 = Linear(hidden_channels*self.heads_hidden, hidden_channels)
         self.lin6 = Linear(hidden_channels, hidden_channels)
         self.lin7 = Linear(hidden_channels, hidden_channels)
         self.lin8 = Linear(hidden_channels, hidden_channels)
@@ -53,6 +56,8 @@ class GNN(torch.nn.Module):
         for k in range(self.n_hidden_convlayers):
             node_attr = self.hidden_layers[k](edge_index,node_attr)
             node_attr = node_attr.relu()
+            heads = [node_attr[:,k,:] for k in range(self.heads_hidden)]
+            node_attr = torch.cat(tuple(heads),1)
 
         # 2. Readout layer , equivalent to global mean pool
         with edge_index.local_scope():
@@ -76,20 +81,19 @@ class GNN(torch.nn.Module):
         
         return node_attr
 
-from IPython.display import Javascript
 #display(Javascript('''google.colab.output.setIframeHeight(0, true, {maxHeight: 300})'''))
 
 
 nb_leafs = 20
 t_max = 300
-model = GNN(hidden_channels=200, n_hidden_convlayers=int(0.4*(nb_leafs-1))).to('cuda')
+model = GNN(hidden_channels=200, n_hidden_convlayers=int(0.4*(nb_leafs-1)))
 optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 criterion = torch.nn.L1Loss(reduction='sum')
 
 import json
 
 # Open the file and read the contents
-with open('/workdir/chirraneso/dataset50k.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
+with open('/workdir/chirraneso/dataset20k.txt', 'r') as file: #'/workdir/chirraneso/dataset10k.txt'
     contents = file.read()
 
 # Parse the contents as JSON and convert it to a Python dictionary
@@ -102,7 +106,7 @@ print("train", train_size)
 index = [k for k in range(n)]
 shuffle(index)
 
-device = torch.device('cuda')
+
 
 def train():
     model.train()
@@ -116,9 +120,9 @@ def train():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col)))).to(device)
-            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float().to(device)
-            data.edata['featedge'] = torch.tensor([values]).T.to(device)
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
+            data.edata['featedge'] = torch.tensor([values]).T
             data = dgl.add_self_loop(data) # for 0 in degree node 
             label = torch.tensor([[p0/p2,p2-p0]])
             out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
@@ -145,9 +149,9 @@ def test():
             row = data_dict["coo"][k][1] 
             col = data_dict["coo"][k][2] 
             coo = torch.LongTensor([row,col])
-            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col)))).to(device)
-            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float().to(device)
-            data.edata['featedge'] = torch.tensor([values]).T.to(device)
+            data = dgl.graph(('coo', (torch.tensor(row), torch.tensor(col))))
+            data.ndata['feat'] = torch.tensor(np.vstack((features,np.zeros(4)))).float()
+            data.edata['featedge'] = torch.tensor([values]).T
             data = dgl.add_self_loop(data)
             label = torch.tensor([[p0/p2,p2-p0]])
             out = model(data.ndata['feat'],data) # Perform a single forward pass. #CHANGE
@@ -162,12 +166,12 @@ def test():
     return MSE/(n-train_size), error_q/(n-train_size), error_delta/(n-train_size), error_p2/(n-train_size), error_p0/(n-train_size)
 
 
-report = open("report_GNN_node_features50kgpu.txt","w+")
+report = open("report_GAT_node_features20kcpu200n4head.txt","w+")
 report.write(f'leafs:{nb_leafs}\n')
 report.write(f'tmax:{t_max}\n')
 report.write(f'trainsize:{train_size}\n')
 
-for epoch in range(1, 50):
+for epoch in range(1, 100):
     train()
     MSE, error_q, error_delta, error_p2, error_p0 = test()
     report.write(f'Epoch: {epoch:03d}, Test MSE: {MSE:.4f}, Test error q: {error_q:.4f},Test error delat: {error_delta:.4f},Test error p2: {error_p2:.4f}, Test error p0: {error_p0:.4f} \n')

@@ -80,7 +80,7 @@ from IPython.display import Javascript
 
 nb_leafs = 20
 t_max = 300
-model = GNN(hidden_channels=50, n_hidden_convlayers=int(0.4*(nb_leafs-1)))
+model = GNN(hidden_channels=200, n_hidden_convlayers=int(0.4*(nb_leafs-1)))
 optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 criterion = torch.nn.L1Loss(reduction='sum')
 
@@ -150,12 +150,12 @@ def test():
     return MSE/(n-train_size), error_q/(n-train_size), error_delta/(n-train_size), error_p2/(n-train_size), error_p0/(n-train_size)
 
 
-report = open("report_GNN_node_features.txt","w+")
+report = open("report_GNN_node_features200neuron.txt","w+")
 report.write(f'leafs:{nb_leafs}\n')
 report.write(f'tmax:{t_max}\n')
 report.write(f'trainsize:{train_size}\n')
 
-for epoch in range(1, 100):
+for epoch in range(1, 75):
     train()
     MSE, error_q, error_delta, error_p2, error_p0 = test()
     report.write(f'Epoch: {epoch:03d}, Test MSE: {MSE:.4f}, Test error q: {error_q:.4f},Test error delat: {error_delta:.4f},Test error p2: {error_p2:.4f}, Test error p0: {error_p0:.4f} \n')
