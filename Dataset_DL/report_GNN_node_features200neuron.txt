@@ -1,0 +1,13 @@
+leafs:20
+tmax:300
+trainsize:8000
+Epoch: 001, Test MSE: 0.2641, Test error q: 3.0731,Test error delat: 0.4285,Test error p2: 0.3037, Test error p0: 4.2255 
+Epoch: 002, Test MSE: 0.2528, Test error q: 3.0542,Test error delat: 0.3835,Test error p2: 0.2965, Test error p0: 4.4475 
+Epoch: 003, Test MSE: 0.2303, Test error q: 3.4753,Test error delat: 0.2781,Test error p2: 0.2578, Test error p0: 4.6877 
+Epoch: 004, Test MSE: 0.2268, Test error q: 3.3357,Test error delat: 0.2678,Test error p2: 0.2514, Test error p0: 4.5592 
+Epoch: 005, Test MSE: 0.2237, Test error q: 3.3479,Test error delat: 0.2592,Test error p2: 0.2552, Test error p0: 4.6857 
+Epoch: 006, Test MSE: 0.2220, Test error q: 3.4704,Test error delat: 0.2398,Test error p2: 0.2482, Test error p0: 4.6868 
+Epoch: 007, Test MSE: 0.2221, Test error q: 3.1206,Test error delat: 0.2599,Test error p2: 0.2521, Test error p0: 4.4616 
+Epoch: 008, Test MSE: 0.2196, Test error q: 3.3304,Test error delat: 0.2408,Test error p2: 0.2473, Test error p0: 4.6470 
+Epoch: 009, Test MSE: 0.2188, Test error q: 3.1829,Test error delat: 0.2441,Test error p2: 0.2475, Test error p0: 4.4650 
+Epoch: 010, Test MSE: 0.2203, Test error q: 3.4202,Test error delat: 0.2332,Test error p2: 0.2476, Test error p0: 4.5930 

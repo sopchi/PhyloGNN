@@ -1,0 +1,3 @@
+leafs:20
+tmax:300
+trainsize:8000
